@@ -1,22 +1,9 @@
 # CSE 4/589: PA1 AutoGrader [Server]
 
 ## Requirements
-
-* **Five(5)** Linux hosts/machines
-* Networking setup such that all the five hosts are _reachable_ from each other
 * GNU **make** and **GCC** toolchain for both C and C++
 * [**expect**](http://expect.sourceforge.net/)
 * **Python** 2.7 or higher (Python 3.x is not supported)
-
-***
-##### <img src="http://cse4589.github.io/assets/site/images/UB_BLU_RGB.png" width=30></img>
-List of UB CSE hosts:
-* stones.cse.buffalo.edu
-* euston.cse.buffalo.edu
-* embankment.cse.buffalo.edu
-* underground.cse.buffalo.edu
-* highgate.cse.buffalo.edu
-***
 
 ## Setup
 _The setup instructions below need to be repeated for each of the five grading hosts._
@@ -57,8 +44,8 @@ $ rm -rf grading && mkdir grading
 ***
 ##### <img src="http://cse4589.github.io/assets/site/images/UB_BLU_RGB.png" width=30></img>
 ```bash
-$ rm -rf /local/CSE489-GRADER/upload && mkdir /local/CSE489-GRADER/upload
-$ rm -rf /local/CSE489-GRADER/grading && mkdir /local/CSE489-GRADER/grading
+$ rm -rf /local/CSE489-GRADER/upload && mkdir /local/CSE489-GRADER/upload && chmod g+w,o-rwx /local/CSE489-GRADER/upload
+$ rm -rf /local/CSE489-GRADER/grading && mkdir /local/CSE489-GRADER/grading && chmod g+w,o-rwx /local/CSE489-GRADER/grading
 ```
 
 #### Notes
@@ -74,6 +61,7 @@ $ cd pa1_http_server
 $ git clone --no-checkout https://github.com/cse4589/cse4589-pa1.git
 $ cd cse4589-pa1
 $ git config core.sparseCheckout true
+$ echo 'Grader/remote' >> .git/info/sparse-checkout
 $ echo 'HTTPLauncher' >> .git/info/sparse-checkout
 $ git checkout master
 ```
@@ -101,10 +89,11 @@ $ python grader_launcher.py -p [port] -u /path/to/dir-submission/upload -g /path
 To make the server start/restart easier within UB CSE department, you can use our quick server startup script. To start the script on port number [port]:
 
 ```bash
-$ wget https://git.io/vNzaz -O start_pa1_http_server.sh
+$ wget https://git.io/fh0vk -O start_pa1_http_server.sh
 $ chmod +x start_pa1_http_server.sh
-$ screen -d -m start_pa1_http_server.sh [port]
+$ screen -d -m /absolute/path/to/start_pa1_http_server.sh [port]
 ```
+
 ***
 
 #### Notes
