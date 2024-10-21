@@ -86,7 +86,7 @@ class HTTPHandler(BaseHTTPRequestHandler):
             if action == 'build':
                 tarball = message.get('tarball', [None])[0]
                 if not build_submission(tarball):
-                    response = 'FAILED'
+                    response = 'FAILED: Unable to build the submission. Check the tarball and its contents.'
 
             elif action == 'run-python':
                 tarball = message.get('tarball', [None])[0]
@@ -95,8 +95,11 @@ class HTTPHandler(BaseHTTPRequestHandler):
                 student_dir = os.path.join(gdir, os.path.splitext(tarball)[0])
                 script_path = os.path.join(student_dir, script_name)
 
-                result = subprocess.check_output(['python3', script_path]).decode('utf-8')
-                response = result
+                try:
+                    result = subprocess.check_output(['python3', script_path]).decode('utf-8')
+                    response = result
+                except subprocess.CalledProcessError as e:
+                    response = f'FAILED: Python script returned non-zero exit status {e.returncode}. Output: {e.output.decode("utf-8")}'
 
             elif action == 'init':
                 remote_grader_path = message.get('remote_grader_path', [None])[0]
@@ -148,3 +151,4 @@ if __name__ == '__main__':
 
     server = ThreadedHTTPServer(('0.0.0.0', port), HTTPHandler)
     server.serve_forever()
+
