@@ -89,7 +89,7 @@ def build_submission(filename):
 
 
 def init_grading_server(remote_grader_path, python, port):
-    subprocess.Popen(f'cd {remote_grader_path};{python} grader_remote.py -p {port}', shell=True)
+    subprocess.Popen(f'cd {remote_grader_path};/util/bin/python3.7 grader_remote.py -p {port}', shell=True)
 
 
 class HTTPHandler(BaseHTTPRequestHandler):
