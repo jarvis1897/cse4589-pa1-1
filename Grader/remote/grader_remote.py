@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/util/bin/python3.7
 #
 # This file is part of CSE 489/589 Grader.
 #
@@ -22,9 +22,12 @@ __license__ = "GNU GPL"
 __version__ = "1.0"
 
 import sys
-from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
-from SocketServer import ThreadingMixIn
-import urlparse
+# from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
+# from SocketServer import ThreadingMixIn
+# import urlparse
+from http.server import HTTPServer, BaseHTTPRequestHandler
+from socketserver import ThreadingMixIn
+from urllib.parse import urlparse, parse_qs
 import argparse
 import os
 
@@ -131,23 +134,22 @@ def test_runner(action, binary, args):
     if action == 'CBONUS':
         response = cbonus(binary, *args)
 
-    return str(response)
+    return str(response).encode() # Return as bytes
 
 class GetHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
-        parsed = urlparse.urlparse(self.path)
-        message = urlparse.parse_qs(parsed.query)
+        parsed = urlparse(self.path)
+        message = parse_qs(parsed.query)
 
         action = message.get('action')[0]
-        print("Action: {}".format(action))  # Debugging line
+        print(f"Action: {action}")
         binary = message.get('binary')[0]
-        print("Binary: {}".format(binary))  # Debugging line
+        print(f"Binary: {binary}")
         nargs = int(message.get('nargs')[0])
-        print("Number of arguments (nargs): {}".format(nargs))  # Debugging line
-        # Create a list of arguments
-        args = [message.get('arg' + str(argc))[0] for argc in range(nargs)]
-        print("Arguments: {}".format(args))  # Debugging line
+        print(f"Number of arguments (nargs): {nargs}")
+        args = [message.get(f'arg{argc}')[0] for argc in range(nargs)]
+        print(f"Arguments: {args}")
 
         self.send_response(200)
         self.end_headers()
@@ -163,8 +165,8 @@ if __name__ == '__main__':
     port = args.port[0]
 
     # Kill existing process (if any)
-    os.system("kill -9 $(netstat -tpal | grep :%s | awk '{print $NF}' | cut -d/ -f1) > /dev/null 2>&1" % (port))
+    os.system(f"kill -9 $(netstat -tpal | grep :{port} | awk '{{print $NF}}' | cut -d/ -f1) > /dev/null 2>&1")
 
     server = ThreadedHTTPServer(('0.0.0.0', port), GetHandler)
-    print 'Starting grading server ...'
+    print('Starting grading server ...')
     server.serve_forever()
