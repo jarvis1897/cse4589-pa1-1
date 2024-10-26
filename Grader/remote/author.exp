@@ -1,14 +1,19 @@
 #!/usr/bin/expect
 
-set binary [lindex $argv 0];
+# Extract arguments: Python interpreter + script, mode, port
+set py_command [lindex $argv 0]
 set s_or_c [lindex $argv 1];
 set port [lindex $argv 2]
 
 set timeout 1
 
-spawn $binary $s_or_c $port
+# Run the Python script with the provided mode and port
+spawn $py_command $s_or_c $port
 
+# Send "AUTHOR" command after receiving any output
 expect "*" { send "AUTHOR\n" }
+
+# Wait 2 seconds, then forcibly kill the process
 sleep 2
 exec kill -9 [exp_pid]
 

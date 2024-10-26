@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/util/bin/python3.7
 #
 # This file is part of CSE 489/589 Grader.
 #
@@ -34,14 +34,14 @@ def grade_startup(binary, s_or_c, port):
     else:
         return False
 
-def grade_author(binary, s_or_c, port):
-    command = "expect -f author.exp "+binary+" "+s_or_c+" "+str(port)
+def grade_author(py_script, s_or_c, port):
+    command = f"expect -f author.exp 'python3.7 {py_script}' {s_or_c} {port}"
     process = subprocess.Popen(command, shell=True, stdout=open(os.devnull, 'w'), stderr=subprocess.STDOUT)
 
     time.sleep(3)
     kill(process.pid)
 
-    return read_logfile(binary, port)
+    return read_logfile(py_script, port)
 
 def grade_ip(binary, s_or_c, port):
     command = "expect -f ip.exp "+binary+" "+s_or_c+" "+str(port)

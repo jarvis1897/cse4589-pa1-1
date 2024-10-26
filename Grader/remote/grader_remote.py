@@ -140,9 +140,14 @@ class GetHandler(BaseHTTPRequestHandler):
         message = urlparse.parse_qs(parsed.query)
 
         action = message.get('action')[0]
+        print("Action: {}".format(action))  # Debugging line
         binary = message.get('binary')[0]
+        print("Binary: {}".format(binary))  # Debugging line
         nargs = int(message.get('nargs')[0])
-        args = [message.get('arg'+str(argc))[0] for argc in range(nargs)]
+        print("Number of arguments (nargs): {}".format(nargs))  # Debugging line
+        # Create a list of arguments
+        args = [message.get('arg' + str(argc))[0] for argc in range(nargs)]
+        print("Arguments: {}".format(args))  # Debugging line
 
         self.send_response(200)
         self.end_headers()

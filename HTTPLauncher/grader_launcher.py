@@ -45,6 +45,16 @@ def upload_file(submit_file):
 
     del file_data
 
+def inspect_tarball(filename):
+    """Inspect the contents of the tarball."""
+    try:
+        tar_path = os.path.join(udir, filename)
+        with tarfile.open(tar_path) as tar:
+            print("Contents of tarball:")
+            for member in tar.getmembers():
+                print(f" - {member.name}")
+    except Exception as e:
+        print(f"Failed to inspect tarball: {str(e)}")
 
 def build_submission(filename):
     success = True
@@ -52,10 +62,18 @@ def build_submission(filename):
         student_dir = os.path.join(gdir, os.path.splitext(filename)[0])
         if not os.path.exists(student_dir):
             os.makedirs(student_dir)
+            print(f"Created directory: {student_dir}")  # Debug statement
 
-        tar = tarfile.open(os.path.join(udir, filename))
+        tar_path = os.path.join(udir, filename)
+        print(f"Extracting tarball: {tar_path} to {student_dir}")  # Debug statement
+        
+        # Inspect the tarball contents before extraction
+        inspect_tarball(filename)
+
+        tar = tarfile.open(tar_path)
         tar.extractall(path=student_dir)
         tar.close()
+        print(f"Extraction completed: {os.listdir(student_dir)}")
 
         if filename.endswith('.py'):
             return success
@@ -81,45 +99,43 @@ class HTTPHandler(BaseHTTPRequestHandler):
         message = parse_qs(parsed.query)
         action = message.get('action', [None])[0]
         response = 'OK'
+        summary = []
 
         try:
             if action == 'build':
                 tarball = message.get('tarball', [None])[0]
                 if not build_submission(tarball):
                     response = 'FAILED: Unable to build the submission. Check the tarball and its contents.'
-
-            elif action == 'run-python':
-                tarball = message.get('tarball', [None])[0]
-                script_name = message.get('script', [None])[0]
-
-                student_dir = os.path.join(gdir, os.path.splitext(tarball)[0])
-                script_path = os.path.join(student_dir, script_name)
-
-                try:
-                    result = subprocess.check_output(['python3', script_path]).decode('utf-8')
-                    response = result
-                except subprocess.CalledProcessError as e:
-                    response = f'FAILED: Python script returned non-zero exit status {e.returncode}. Output: {e.output.decode("utf-8")}'
+                    summary.append(f"Build failed for tarball: {tarball}")
+                else:
+                    summary.append(f"Build succeeded for tarball: {tarball}")
 
             elif action == 'init':
                 remote_grader_path = message.get('remote_grader_path', [None])[0]
                 python = message.get('python', [None])[0]
                 port = message.get('port', [None])[0]
                 init_grading_server(remote_grader_path, python, port)
+                summary.append(f"Initialized grading server at {remote_grader_path} on port {port}")
 
             elif action == 'get-gdir':
                 response = gdir
+                summary.append(f"Grading directory retrieved: {gdir}")
 
             elif action == 'terminate':
                 port = message.get('port', [None])[0]
                 os.system(f"kill -9 $(netstat -tpal | grep :{port} | awk '{{print $NF}}' | cut -d/ -f1) > /dev/null 2>&1")
+                summary.append(f"Terminated grading server on port {port}")
 
         except Exception as e:
             response = f'FAILED: {str(e)}'
+            summary.append(f"Error occurred: {str(e)}")
 
         self.send_response(200)
         self.end_headers()
-        self.wfile.write(response.encode('utf-8'))
+        
+        # Send both response and summary
+        summary_message = "Summary:\n" + "\n".join(summary)
+        self.wfile.write((response + "\n" + summary_message).encode('utf-8'))
         self.wfile.close()
 
     def do_POST(self):
@@ -129,10 +145,12 @@ class HTTPHandler(BaseHTTPRequestHandler):
 
         submit_file = parsed['submit']
         upload_file(submit_file)
+        
+        summary_message = f"Uploaded file: {submit_file.filename}"
 
         self.send_response(200)
         self.end_headers()
-        self.wfile.write(b'OK')
+        self.wfile.write((b'OK\n' + summary_message.encode('utf-8')))
         self.wfile.close()
 
 

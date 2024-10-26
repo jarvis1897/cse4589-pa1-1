@@ -28,10 +28,14 @@ def kill(pid):
     os.system('kill -9 '+str(pid))
 
 def read_logfile(binary, port):
-	logfile = os.path.dirname(binary)+"/logs/assignment_log_"+socket.getfqdn().split('.')[0]+"_"+str(port)
+    logfile = os.path.dirname(binary) + "/logs/assignment_log_" + socket.getfqdn().split('.')[0] + "_" + str(port) + ".log"
+    
+    # Debugging output for logfile path
+    print("Logfile path: {}".format(logfile))  
+    print("Current working directory: {}".format(os.getcwd()))  
 
-	if os.path.isfile(logfile):
-		with open(logfile, 'r') as f:
-			return f.read()
-
-	else: return 'NoLogFile'
+    if os.path.isfile(logfile):
+        with open(logfile, 'r') as f:
+            return f.read()
+    else:
+        return 'NoLogFile'
