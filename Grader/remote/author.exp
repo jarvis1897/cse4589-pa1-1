@@ -1,20 +1,28 @@
 #!/usr/bin/expect
 
-# Extract arguments: Python interpreter + script, mode, port
 set py_command [lindex $argv 0]
-set s_or_c [lindex $argv 1];
+set s_or_c [lindex $argv 1]
 set port [lindex $argv 2]
 
-set timeout 1
+# Debugging output to verify arguments
+puts "Running: $py_command $s_or_c $port"
 
-# Run the Python script with the provided mode and port
+set timeout 5
+
 spawn $py_command $s_or_c $port
 
-# Send "AUTHOR" command after receiving any output
-expect "*" { send "AUTHOR\n" }
+# Debugging: Print output before sending "AUTHOR"
+expect {
+    "*" { puts "Output: $expect_out(buffer)"; send "AUTHOR\n" }
+}
 
-# Wait 2 seconds, then forcibly kill the process
+# Wait for the process to run
 sleep 2
+
+# Debugging: Print PID before killing
+puts "Killing process with PID: [exp_pid]"
+
+# Kill the process
 exec kill -9 [exp_pid]
 
 interact

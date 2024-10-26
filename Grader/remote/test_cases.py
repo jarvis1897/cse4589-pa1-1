@@ -40,8 +40,13 @@ def grade_author(py_script, s_or_c, port):
     print(f"Executing command: {command}")
     process = subprocess.Popen(command, shell=True, stdout=open(os.devnull, 'w'), stderr=subprocess.STDOUT)
 
-    time.sleep(3)
-    kill(process.pid)
+    try:
+        stdout, stderr = process.communicate(timeout=5)
+        print(f"Command output: {stdout.decode()}")
+        print(f"Command error: {stderr.decode()}")
+    except subprocess.TimeoutExpired:
+        print("Process timed out. Killing it...")
+        process.kill()
 
     return read_logfile(py_script, port)
 
