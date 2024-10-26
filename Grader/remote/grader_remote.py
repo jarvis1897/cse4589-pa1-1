@@ -148,7 +148,7 @@ class GetHandler(BaseHTTPRequestHandler):
         print("Binary: {}".format(binary))
         nargs = int(message.get('nargs')[0])
         print("Number of arguments (nargs): {}".format(nargs))
-        args = [message.get(f'arg{argc}')[0] for argc in range(nargs)]
+        args = [message.get('arg{}'.format(argc))[0] for argc in range(nargs)]
         print("Arguments: {}".format(args))
 
         self.send_response(200)
