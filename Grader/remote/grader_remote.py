@@ -153,8 +153,15 @@ class GetHandler(BaseHTTPRequestHandler):
 
         self.send_response(200)
         self.end_headers()
-        self.wfile.write(test_runner(action, binary, args))
-        self.wfile.close()
+        try:
+            response = test_runner(action, binary, args)
+            self.wfile.write(response.encode('utf-8'))  # Ensure response is in bytes
+        except Exception as e:
+            # Handle exceptions and log error
+            print(f"Error processing request: {e}")
+            self.send_response(500)
+            self.end_headers()
+            self.wfile.write(b"Internal Server Error")
         return
 
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
