@@ -9,7 +9,7 @@ puts "Running: $py_command $s_or_c $port"
 
 set timeout 5
 
-spawn $py_command $s_or_c $port
+spawn python3.7 $py_command $s_or_c $port
 
 # Debugging: Print output before sending "AUTHOR"
 expect {
