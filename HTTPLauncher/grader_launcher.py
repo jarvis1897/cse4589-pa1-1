@@ -1,4 +1,4 @@
-#!/usr/bin/python3.7
+#!/util/bin/python3.7
 
 # This file is part of CSE 489/589 Grader.
 #
