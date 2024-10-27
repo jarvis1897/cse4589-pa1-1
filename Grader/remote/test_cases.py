@@ -47,7 +47,7 @@ def grade_author(py_script, s_or_c, port):
     print(f"log: {log}")
     return log
 
-def grade_ip(binary, s_or_c, port):
+def grade_ip(py_script, s_or_c, port):
     print(f"py_script: {py_script}, s_or_c: {s_or_c}, port: {port}")
     command = f"expect -f author.exp {py_script} {s_or_c} {port}"
     print(f"Executing command: {command}")
