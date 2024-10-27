@@ -143,25 +143,18 @@ class GetHandler(BaseHTTPRequestHandler):
         message = parse_qs(parsed.query)
 
         action = message.get('action')[0]
-        print("Action: {}".format(action))
+        # print("Action: {}".format(action))
         binary = message.get('binary')[0]
-        print("Binary: {}".format(binary))
+        # print("Binary: {}".format(binary))
         nargs = int(message.get('nargs')[0])
-        print("Number of arguments (nargs): {}".format(nargs))
+        # print("Number of arguments (nargs): {}".format(nargs))
         args = [message.get('arg{}'.format(argc))[0] for argc in range(nargs)]
-        print("Arguments: {}".format(args))
+        # print("Arguments: {}".format(args))
 
         self.send_response(200)
         self.end_headers()
-        try:
-            # response = test_runner(action, binary, args)
-            self.wfile.write(test_runner(action, binary, args))  # Ensure response is in bytes
-        except Exception as e:
-            # Handle exceptions and log error
-            print(f"Error processing request: {e}")
-            self.send_response(500)
-            self.end_headers()
-            self.wfile.write(b"Internal Server Error")
+        self.wfile.write(test_runner(action, binary, args))
+        self.wfile.close()
         return
 
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
