@@ -48,7 +48,9 @@ def grade_author(py_script, s_or_c, port):
         print("Process timed out. Killing it...")
         process.kill()
 
-    return read_logfile(py_script, port)
+    log = read_logfile(py_script, port)
+    print(f"log: {log}")
+    return log
 
 def grade_ip(binary, s_or_c, port):
     command = "expect -f ip.exp "+binary+" "+s_or_c+" "+str(port)
