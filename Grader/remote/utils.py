@@ -35,7 +35,15 @@ def read_logfile(binary, port):
     print("Current working directory: {}".format(os.getcwd()))  
 
     if os.path.isfile(logfile):
-        with open(logfile, 'r') as f:
-            return f.read()
+        print("[DEBUG] Logfile found. Attempting to read...")
+        try:
+            with open(logfile, 'r') as f:
+                content = f.read()
+                print(f"[DEBUG] Logfile content:\n{content}")
+                return content
+        except Exception as e:
+            # Handle any errors while reading the file
+            print(f"[ERROR] Failed to read logfile: {str(e)}")
+            return f"Error reading logfile: {str(e)}"
     else:
         return 'NoLogFile'
