@@ -48,13 +48,17 @@ def grade_author(py_script, s_or_c, port):
     return log
 
 def grade_ip(binary, s_or_c, port):
-    command = "expect -f ip.exp "+binary+" "+s_or_c+" "+str(port)
+    print(f"py_script: {py_script}, s_or_c: {s_or_c}, port: {port}")
+    command = f"expect -f author.exp {py_script} {s_or_c} {port}"
+    print(f"Executing command: {command}")
     process = subprocess.Popen(command, shell=True)
 
     time.sleep(2)
     kill(process.pid)
 
-    return read_logfile(binary, port)
+    log = read_logfile(py_script, port)
+    print(f"log: {log}")
+    return log
 
 def grade_port(binary, s_or_c, port):
     command = "expect -f port.exp "+binary+" "+s_or_c+" "+str(port)
