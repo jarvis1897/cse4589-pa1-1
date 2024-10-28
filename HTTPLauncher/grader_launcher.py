@@ -99,48 +99,46 @@ class HTTPHandler(BaseHTTPRequestHandler):
         parsed = urlparse(self.path)
         message = parse_qs(parsed.query)
         action = message.get('action', [None])[0]
-        response = 'OK'
-        summary = []
-
+    
         try:
-            if action == 'build':
+            if action == 'get-gdir':
+                # Send only the grading directory path, without any extra formatting or summary.
+                self.send_response(200)
+                self.end_headers()
+                self.wfile.write(gdir.strip().encode('utf-8'))
+                return  # Exit to prevent any further processing.
+    
+            elif action == 'build':
                 tarball = message.get('tarball', [None])[0]
                 if not build_submission(tarball):
-                    response = 'FAILED: Unable to build the submission. Check the tarball and its contents.'
-                    summary.append(f"Build failed for tarball: {tarball}")
+                    response = f'FAILED: Unable to build the submission: {tarball}'
                 else:
-                    summary.append(f"Build succeeded for tarball: {tarball}")
-
+                    response = f'SUCCESS: Build completed for {tarball}'
+    
             elif action == 'init':
                 remote_grader_path = message.get('remote_grader_path', [None])[0]
                 python = message.get('python', [None])[0]
-                port = message.get('port', [None])[0]
+                port = int(message.get('port', [None])[0])
                 init_grading_server(remote_grader_path, python, port)
-                # summary.append(f"Initialized grading server at {remote_grader_path} on port {port}")
-
-            elif action == 'get-gdir':
-                response = gdir.strip()
-                self.send_response(200)
-                self.end_headers()
-                self.wfile.write(response.encode('utf-8'))
-                return
-
+                response = f'Grading server initialized at {remote_grader_path} on port {port}'
+    
             elif action == 'terminate':
-                port = message.get('port', [None])[0]
+                port = int(message.get('port', [None])[0])
                 os.system(f"kill -9 $(netstat -tpal | grep :{port} | awk '{{print $NF}}' | cut -d/ -f1) > /dev/null 2>&1")
-                summary.append(f"Terminated grading server on port {port}")
-
+                response = f'Terminated grading server on port {port}'
+    
+            else:
+                response = 'Invalid action.'
+    
         except Exception as e:
             response = f'FAILED: {str(e)}'
-            summary.append(f"Error occurred: {str(e)}")
-
+    
+        # Send the response and close the connection.
         self.send_response(200)
         self.end_headers()
-        
-        # Send both response and summary
-        summary_message = "Summary:\n" + "\n".join(summary)
-        self.wfile.write((response + "\n" + summary_message).encode('utf-8'))
+        self.wfile.write(response.encode('utf-8'))
         self.wfile.close()
+
 
     def do_POST(self):
         parsed = cgi.FieldStorage(fp=self.rfile, headers=self.headers,
