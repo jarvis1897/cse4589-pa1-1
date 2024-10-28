@@ -109,7 +109,8 @@ class HTTPHandler(BaseHTTPRequestHandler):
         self.send_response(200)
         self.end_headers()
         self.wfile.write(response.encode('utf-8'))
-
+        # self.wfile.close()
+        return
 
     def do_POST(self):
         parsed = cgi.FieldStorage(fp=self.rfile, headers=self.headers,
@@ -121,7 +122,8 @@ class HTTPHandler(BaseHTTPRequestHandler):
         self.send_response(200)
         self.end_headers()
         self.wfile.write(b'OK\n')
-
+        # self.wfile.close()
+        return
 
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     pass
