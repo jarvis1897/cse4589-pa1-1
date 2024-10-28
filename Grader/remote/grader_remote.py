@@ -154,7 +154,6 @@ class GetHandler(BaseHTTPRequestHandler):
         self.send_response(200)
         self.end_headers()
         self.wfile.write(test_runner(action, binary, args))
-        self.wfile.close()
         return
 
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
