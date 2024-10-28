@@ -134,9 +134,12 @@ class HTTPHandler(BaseHTTPRequestHandler):
         self.end_headers()
         
         # Send both response and summary
-        summary_message = "Summary:\n" + "\n".join(summary)
-        self.wfile.write((response + "\n" + summary_message).encode('utf-8'))
-        self.wfile.close()
+        try:
+            summary_message = "Summary:\n" + "\n".join(summary)
+            self.wfile.write((response + "\n" + summary_message).encode('utf-8'))
+        except ValueError as e:
+            print(f"Error writing response: {str(e)}")
+
 
     def do_POST(self):
         parsed = cgi.FieldStorage(fp=self.rfile, headers=self.headers,
