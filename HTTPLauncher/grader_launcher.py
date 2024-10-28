@@ -38,37 +38,55 @@ requiredArgs.add_argument('-g', '--grade-dir', dest='grading_dir', type=str, nar
 
 def upload_file(submit_file):
     file_name = submit_file.filename
+    file_data = submit_file.file.read()
+
     with open(os.path.join(udir, file_name), 'wb') as submission:
-        submission.write(submit_file.file.read())
+        submission.write(file_data)
+
+    del file_data
 
 def inspect_tarball(filename):
     """Inspect the contents of the tarball."""
     try:
-        with tarfile.open(os.path.join(udir, filename)) as tar:
+        tar_path = os.path.join(udir, filename)
+        with tarfile.open(tar_path) as tar:
+            print("Contents of tarball:")
             for member in tar.getmembers():
                 print(f" - {member.name}")
     except Exception as e:
-        print(f"Failed to inspect tarball: {e}")
+        print(f"Failed to inspect tarball: {str(e)}")
 
 
 def build_submission(filename):
+    success = True
     try:
         student_dir = os.path.join(gdir, os.path.splitext(filename)[0])
-        os.makedirs(student_dir, exist_ok=True)
+        if not os.path.exists(student_dir):
+            os.makedirs(student_dir)
+            print(f"Created directory: {student_dir}")  # Debug statement
 
         tar_path = os.path.join(udir, filename)
+        print(f"Extracting tarball: {tar_path} to {student_dir}")  # Debug statement
+        
+        # Inspect the tarball contents before extraction
         inspect_tarball(filename)
 
-        with tarfile.open(tar_path) as tar:
-            tar.extractall(path=student_dir)
+        tar = tarfile.open(tar_path)
+        tar.extractall(path=student_dir)
+        tar.close()
+        print(f"Extraction completed: {os.listdir(student_dir)}")
 
         if filename.endswith('.py'):
-            return True
+            return success
 
-        return os.system(f'cd {student_dir} && make clean && make') == 0
+        if os.system(f'cd {student_dir} && make clean && make') != 0:
+            success = False
+
     except Exception as e:
-        print(f"Error during build: {e}")
-        return False
+        print(f"Error during build: {str(e)}")
+        success = False
+
+    return success
 
 
 def init_grading_server(remote_grader_path, python, port):
@@ -82,48 +100,59 @@ class HTTPHandler(BaseHTTPRequestHandler):
         message = parse_qs(parsed.query)
         action = message.get('action', [None])[0]
         response = 'OK'
+        summary = []
 
         try:
             if action == 'build':
                 tarball = message.get('tarball', [None])[0]
                 if not build_submission(tarball):
-                    response = 'FAILED: Unable to build the submission.'
+                    response = 'FAILED: Unable to build the submission. Check the tarball and its contents.'
+                    summary.append(f"Build failed for tarball: {tarball}")
+                else:
+                    summary.append(f"Build succeeded for tarball: {tarball}")
 
             elif action == 'init':
-                init_grading_server(
-                    remote_grader_path=message.get('remote_grader_path', [None])[0],
-                    python=message.get('python', [None])[0],
-                    port=message.get('port', [None])[0]
-                )
+                remote_grader_path = message.get('remote_grader_path', [None])[0]
+                python = message.get('python', [None])[0]
+                port = message.get('port', [None])[0]
+                init_grading_server(remote_grader_path, python, port)
+                summary.append(f"Initialized grading server at {remote_grader_path} on port {port}")
 
             elif action == 'get-gdir':
                 response = gdir
+                summary.append(f"Grading directory retrieved: {gdir}")
 
             elif action == 'terminate':
                 port = message.get('port', [None])[0]
                 os.system(f"kill -9 $(netstat -tpal | grep :{port} | awk '{{print $NF}}' | cut -d/ -f1) > /dev/null 2>&1")
+                summary.append(f"Terminated grading server on port {port}")
 
         except Exception as e:
-            response = f'FAILED: {e}'
+            response = f'FAILED: {str(e)}'
+            summary.append(f"Error occurred: {str(e)}")
 
         self.send_response(200)
         self.end_headers()
-        self.wfile.write(response.encode('utf-8'))
-        # self.wfile.close()
-        return
+        
+        # Send both response and summary
+        summary_message = "Summary:\n" + "\n".join(summary)
+        self.wfile.write((response + "\n" + summary_message).encode('utf-8'))
+        self.wfile.close()
 
     def do_POST(self):
         parsed = cgi.FieldStorage(fp=self.rfile, headers=self.headers,
                                   environ={'REQUEST_METHOD': 'POST',
                                            'CONTENT_TYPE': self.headers['Content-Type']})
 
-        upload_file(parsed['submit'])
+        submit_file = parsed['submit']
+        upload_file(submit_file)
+        
+        summary_message = f"Uploaded file: {submit_file.filename}"
 
         self.send_response(200)
         self.end_headers()
-        self.wfile.write(b'OK\n')
-        # self.wfile.close()
-        return
+        self.wfile.write((b'OK\n' + summary_message.encode('utf-8')))
+        self.wfile.close()
 
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     pass
