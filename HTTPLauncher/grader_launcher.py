@@ -119,7 +119,7 @@ class HTTPHandler(BaseHTTPRequestHandler):
 
             elif action == 'get-gdir':
                 response = gdir
-                summary.append(f"Grading directory retrieved: {gdir}")
+                # summary.append(f"Grading directory retrieved: {gdir}")
 
             elif action == 'terminate':
                 port = message.get('port', [None])[0]
@@ -167,8 +167,8 @@ if __name__ == '__main__':
     port = args.port[0]
     udir = args.upload_dir[0]
     gdir = args.grading_dir[0]
-    print(f"gdir: {gdir}")
-    print(f"udir: {udir}")
+    # print(f"gdir: {gdir}")
+    # print(f"udir: {udir}")
 
     os.system(f"kill -9 $(netstat -tpal | grep :{port} | awk '{{print $NF}}' | cut -d/ -f1) > /dev/null 2>&1")
 
