@@ -139,10 +139,6 @@ class HTTPHandler(BaseHTTPRequestHandler):
             self.wfile.write((response + " " + summary_message).encode('utf-8'))
         except ValueError as e:
             print(f"Error writing response: {str(e)}")
-        
-        # summary_message = "Summary:\n" + "\n".join(summary)
-        # self.wfile.write((response + "\n" + summary_message).encode('utf-8'))
-        # self.wfile.close()
 
 
     def do_POST(self):
@@ -171,6 +167,8 @@ if __name__ == '__main__':
     port = args.port[0]
     udir = args.upload_dir[0]
     gdir = args.grading_dir[0]
+    print(f"gdir: {gdir}")
+    print(f"udir: {udir}")
 
     os.system(f"kill -9 $(netstat -tpal | grep :{port} | awk '{{print $NF}}' | cut -d/ -f1) > /dev/null 2>&1")
 
