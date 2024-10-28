@@ -133,12 +133,16 @@ class HTTPHandler(BaseHTTPRequestHandler):
         self.send_response(200)
         self.end_headers()
         
-        # Send both response and summary
-        try:
-            summary_message = "Summary:" + " ".join(summary)
-            self.wfile.write((response + " " + summary_message).encode('utf-8'))
-        except ValueError as e:
-            print(f"Error writing response: {str(e)}")
+        # # Send both response and summary
+        # try:
+        #     summary_message = "Summary:" + " ".join(summary)
+        #     self.wfile.write((response + " " + summary_message).encode('utf-8'))
+        # except ValueError as e:
+        #     print(f"Error writing response: {str(e)}")
+        
+        summary_message = "Summary:\n" + "\n".join(summary)
+        self.wfile.write((response + "\n" + summary_message).encode('utf-8'))
+        self.wfile.close()
 
 
     def do_POST(self):
