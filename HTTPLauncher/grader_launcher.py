@@ -135,8 +135,9 @@ class HTTPHandler(BaseHTTPRequestHandler):
         
         # Send both response and summary
         try:
-            summary_message = "Summary:" + " ".join(summary)
-            self.wfile.write((response + " " + summary_message).encode('utf-8'))
+            # summary_message = "Summary:" + " ".join(summary)
+            # self.wfile.write((response + " " + summary_message).encode('utf-8'))
+            self.wfile.write(response)
         except ValueError as e:
             print(f"Error writing response: {str(e)}")
 
@@ -154,7 +155,7 @@ class HTTPHandler(BaseHTTPRequestHandler):
         self.send_response(200)
         self.end_headers()
         # Correct way to send summary
-        self.wfile.write((b'OK\n' + summary_message.encode('utf-8')))
+        self.wfile.write(b'OK\n') # + summary_message.encode('utf-8'))
 
 
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
