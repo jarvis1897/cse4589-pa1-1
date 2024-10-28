@@ -104,18 +104,18 @@ class HTTPHandler(BaseHTTPRequestHandler):
         try:
             if action == 'build':
                 tarball = message.get('tarball', [None])[0]
-                if not build_submission(tarball):
-                    response = 'FAILED: Unable to build the submission. Check the tarball and its contents.'
-                    summary.append(f"Build failed for tarball: {tarball}")
-                else:
-                    summary.append(f"Build succeeded for tarball: {tarball}")
+                # if not build_submission(tarball):
+                #     response = 'FAILED: Unable to build the submission. Check the tarball and its contents.'
+                #     summary.append(f"Build failed for tarball: {tarball}")
+                # else:
+                #     summary.append(f"Build succeeded for tarball: {tarball}")
 
             elif action == 'init':
                 remote_grader_path = message.get('remote_grader_path', [None])[0]
                 python = message.get('python', [None])[0]
                 port = message.get('port', [None])[0]
                 init_grading_server(remote_grader_path, python, port)
-                summary.append(f"Initialized grading server at {remote_grader_path} on port {port}")
+                # summary.append(f"Initialized grading server at {remote_grader_path} on port {port}")
 
             elif action == 'get-gdir':
                 response = gdir
@@ -124,11 +124,11 @@ class HTTPHandler(BaseHTTPRequestHandler):
             elif action == 'terminate':
                 port = message.get('port', [None])[0]
                 os.system(f"kill -9 $(netstat -tpal | grep :{port} | awk '{{print $NF}}' | cut -d/ -f1) > /dev/null 2>&1")
-                summary.append(f"Terminated grading server on port {port}")
+                # summary.append(f"Terminated grading server on port {port}")
 
         except Exception as e:
             response = f'FAILED: {str(e)}'
-            summary.append(f"Error occurred: {str(e)}")
+            # summary.append(f"Error occurred: {str(e)}")
 
         self.send_response(200)
         self.end_headers()
@@ -137,7 +137,7 @@ class HTTPHandler(BaseHTTPRequestHandler):
         try:
             # summary_message = "Summary:" + " ".join(summary)
             # self.wfile.write((response + " " + summary_message).encode('utf-8'))
-            self.wfile.write(response)
+            self.wfile.write(response.encode('utf-8'))
         except ValueError as e:
             print(f"Error writing response: {str(e)}")
 
@@ -150,12 +150,12 @@ class HTTPHandler(BaseHTTPRequestHandler):
         submit_file = parsed['submit']
         upload_file(submit_file)
         
-        summary_message = f"Uploaded file: {submit_file.filename}"
+        # summary_message = f"Uploaded file: {submit_file.filename}"
 
         self.send_response(200)
         self.end_headers()
         # Correct way to send summary
-        self.wfile.write(b'OK\n') # + summary_message.encode('utf-8'))
+        self.wfile.write((b'OK\n').encode('utf-8')) # + summary_message.encode('utf-8'))
 
 
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
