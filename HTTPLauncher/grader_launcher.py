@@ -116,11 +116,14 @@ class HTTPHandler(BaseHTTPRequestHandler):
                 python = message.get('python', [None])[0]
                 port = message.get('port', [None])[0]
                 init_grading_server(remote_grader_path, python, port)
-                summary.append(f"Initialized grading server at {remote_grader_path} on port {port}")
+                # summary.append(f"Initialized grading server at {remote_grader_path} on port {port}")
 
             elif action == 'get-gdir':
-                response = gdir
-                summary.append(f"Grading directory retrieved: {gdir}")
+                response = gdir.strip()
+                self.send_response(200)
+                self.end_headers()
+                self.wfile.write(response.encode('utf-8'))
+                return
 
             elif action == 'terminate':
                 port = message.get('port', [None])[0]
