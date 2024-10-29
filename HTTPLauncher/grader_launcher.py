@@ -99,6 +99,7 @@ class HTTPHandler(BaseHTTPRequestHandler):
         parsed = urlparse(self.path)
         message = parse_qs(parsed.query)
         action = message.get('action', [None])[0]
+        response = 'OK'
     
         try:
             if action == 'get-gdir':
@@ -113,20 +114,19 @@ class HTTPHandler(BaseHTTPRequestHandler):
                 tarball = message.get('tarball', [None])[0]
                 if not build_submission(tarball):
                     response = f'FAILED: Unable to build the submission: {tarball}'
-                else:
-                    response = f'SUCCESS: Build completed for {tarball}'
     
             if action == 'init':
-                remote_grader_path = message.get('remote_grader_path', [None])[0]
-                python = message.get('python', [None])[0]
-                port = int(message.get('port', [None])[0])
-                init_grading_server(remote_grader_path, python, port)
-                response = f'Grading server initialized at {remote_grader_path} on port {port}'
+                try:
+                    remote_grader_path = message.get('remote_grader_path', [None])[0]
+                    python = message.get('python', [None])[0]
+                    port = int(message.get('port', [None])[0])
+                    init_grading_server(remote_grader_path, python, port)
+                except:
+                    response = 'FAILED'
     
             if action == 'terminate':
                 port = int(message.get('port', [None])[0])
                 os.system(f"kill -9 $(netstat -tpal | grep :{port} | awk '{{print $NF}}' | cut -d/ -f1) > /dev/null 2>&1")
-                response = f'Terminated grading server on port {port}'
     
         except Exception as e:
             response = f'FAILED: {str(e)}'
@@ -146,11 +146,13 @@ class HTTPHandler(BaseHTTPRequestHandler):
         submit_file = parsed['submit']
         upload_file(submit_file)
         
-        summary_message = f"Uploaded file: {submit_file.filename}"
+        # summary_message = f"Uploaded file: {submit_file.filename}"
 
         self.send_response(200)
         self.end_headers()
-        self.wfile.write((b'OK\n' + summary_message.encode('utf-8')))
+        self.wfile.write('OK')
+        self.wfile.close()
+        return
 
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     pass
