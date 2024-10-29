@@ -22,17 +22,17 @@ import time
 import ast
 
 from utils import *
-
-def grade_startup(binary, s_or_c, port):
-    command = binary+" "+s_or_c+" "+str(port)
+    
+def grade_startup(py_script, s_or_c, port):
+    # command = binary+" "+s_or_c+" "+str(port)
+    command = f"python3.7 {py_script} {s_or_c} {port}"
     process = subprocess.Popen(command, shell=True, stdout=open(os.devnull, 'w'), stderr=subprocess.STDOUT)
     time.sleep(2)
     status = procStatus(process.pid)
-    if status == 'R' or status == 'S':
+    if status in ['R', 'S']:
         kill(process.pid)
         return True
-    else:
-        return False
+    return False
 
 def grade_author(py_script, s_or_c, port):
     print(f"py_script: {py_script}, s_or_c: {s_or_c}, port: {port}")
@@ -73,259 +73,211 @@ def grade_port(py_script, s_or_c, port):
     print(f"log: {log}")
     return log
 
-def grade_list(binary, s_or_c, port, s_ip="", s_port=""):
-    if s_or_c == 's': command = "expect -f list_server.exp "+binary+" "+s_or_c+" "+str(port)
-    else: command = "expect -f list_client.exp "+binary+" "+s_or_c+" "+str(port)+" "+s_ip+" "+s_port
+def grade_list(py_script, s_or_c, port, s_ip="", s_port=""):
+    if s_or_c == 's':
+        command = f"expect -f list_server.exp {py_script} {s_or_c} {port}"
+    else:
+        command = f"expect -f list_client.exp {py_script} {s_or_c} {port} {s_ip} {s_port}"
     process = subprocess.Popen(command, shell=True, close_fds=True)
 
     if s_or_c == 's': time.sleep(15)
     else: time.sleep(2)
 
-    return read_logfile(binary, port)
+    return read_logfile(py_script, port)
 
-def grade_refresh(binary, s_or_c, port, s_ip, s_port):
-    command = "expect -f refresh_client.exp "+binary+" "+s_or_c+" "+str(port)+" "+s_ip+" "+s_port
+def grade_refresh(py_script, s_or_c, port, s_ip, s_port):
+    # command = "expect -f refresh_client.exp "+binary+" "+s_or_c+" "+str(port)+" "+s_ip+" "+s_port
+    command = f"expect -f refresh_client.exp {py_script} {s_or_c} {port} {s_ip} {s_port}"
     process = subprocess.Popen(command, shell=True)
-
     time.sleep(8)
     kill(process.pid)
+    return read_logfile(py_script, port)
 
-    return read_logfile(binary, port)
-
-def grade_send(binary, s_or_c, port, s_ip="", s_port=""):
-    if s_or_c == 's': command = "expect -f send_server.exp "+binary+" "+s_or_c+" "+str(port)
-    else: command = "expect -f send_client_r.exp "+binary+" "+s_or_c+" "+str(port)+" "+s_ip+" "+s_port
+def grade_send(py_script, s_or_c, port, s_ip="", s_port=""):
+    if s_or_c == 's':
+        command = f"expect -f send_server.exp {py_script} {s_or_c} {port}"
+    else:
+        command = f"expect -f send_client_r.exp {py_script} {s_or_c} {port} {s_ip} {s_port}"
     process = subprocess.Popen(command, shell=True)
-
     time.sleep(15)
     kill(process.pid)
+    return read_logfile(py_script, port)
 
-    return read_logfile(binary, port)
-
-def ssend(binary, s_or_c, port, s_ip, s_port, sender_string):
+def ssend(py_script, s_or_c, port, s_ip, s_port, sender_string):
     sender_info = ast.literal_eval(sender_string)
-    command = "expect -f send_client_s.exp "+binary+" "+s_or_c+" "+str(port)+" "+s_ip+" "+s_port+" "+' '.join(sender_info)
+    command = f"expect -f send_client_s.exp {py_script} {s_or_c} {port} {s_ip} {s_port} {' '.join(sender_info)}"
     process = subprocess.Popen(command, shell=True)
-
     time.sleep(12)
     kill(process.pid)
+    return read_logfile(py_script, port)
 
-    return read_logfile(binary, port)
-
-def grade_broadcast(binary, s_or_c, port, s_ip, s_port, num_messages, msg):
-    command = "expect -f broadcast_client_s.exp "+binary+" "+s_or_c+" "+str(port)+" "+s_ip+" "+s_port+" "+num_messages+" "+msg
+def grade_broadcast(py_script, s_or_c, port, s_ip, s_port, num_messages, msg):
+    command = f"expect -f broadcast_client_s.exp {py_script} {s_or_c} {port} {s_ip} {s_port} {num_messages} {msg}"
     process = subprocess.Popen(command, shell=True)
-
     time.sleep(12)
     kill(process.pid)
+    return read_logfile(py_script, port)
 
-    return read_logfile(binary, port)
-
-def grade_block(binary, s_or_c, port, s_ip, s_port, server_to_send):
-    command = "expect -f blocked_client.exp "+binary+" "+s_or_c+" "+str(port)+" "+s_ip+" "+s_port+" "+server_to_send
+def grade_block(py_script, s_or_c, port, s_ip, s_port, server_to_send):
+    command = f"expect -f blocked_client.exp {py_script} {s_or_c} {port} {s_ip} {s_port} {server_to_send}"
     process = subprocess.Popen(command, shell=True)
-
     time.sleep(7)
     kill(process.pid)
+    return read_logfile(py_script, port)
 
-    return read_logfile(binary, port)
-
-def sblock(binary, s_or_c, port, s_ip, s_port, server_to_send, msg):
-    command = "expect -f send_client_b.exp "+binary+" "+s_or_c+" "+str(port)+" "+s_ip+" "+s_port+" "+server_to_send+" "+msg
+def sblock(py_script, s_or_c, port, s_ip, s_port, target):
+    command = f"expect -f block_server.exp {py_script} {s_or_c} {port} {s_ip} {s_port} {target}"
     process = subprocess.Popen(command, shell=True)
+    time.sleep(8)
+    kill(process.pid)
+    return read_logfile(py_script, port)
 
+def bblock(py_script, s_or_c, port, s_ip, s_port, target):
+    command = f"expect -f block_client.exp {py_script} {s_or_c} {port} {s_ip} {s_port} {target}"
+    process = subprocess.Popen(command, shell=True)
+    time.sleep(8)
+    kill(process.pid)
+    return read_logfile(py_script, port)
+
+def grade_blocked(py_script, s_or_c, port, s_ip="", s_port=""):
+    command = f"expect -f blocked_server.exp {py_script} {s_or_c} {port} {s_ip} {s_port}"
+    process = subprocess.Popen(command, shell=True)
+    time.sleep(8)
+    kill(process.pid)
+    return read_logfile(py_script, port)
+
+def ablocked(py_script, s_or_c, port, s_ip, s_port, target):
+    command = f"expect -f blocked_client.exp {py_script} {s_or_c} {port} {s_ip} {s_port} {target}"
+    process = subprocess.Popen(command, shell=True)
     time.sleep(7)
     kill(process.pid)
+    return read_logfile(py_script, port)
 
-    return read_logfile(binary, port)
-
-def bblock(binary, s_or_c, port, s_ip, s_port, server_to_block):
-    command = "expect -f blocking_client.exp "+binary+" "+s_or_c+" "+str(port)+" "+s_ip+" "+s_port+" "+server_to_block
+def grade_unblock(py_script, s_or_c, port, s_ip, s_port, target):
+    command = f"expect -f unblock_server.exp {py_script} {s_or_c} {port} {s_ip} {s_port} {target}"
     process = subprocess.Popen(command, shell=True)
-
-    time.sleep(7)
+    time.sleep(5)
     kill(process.pid)
+    return read_logfile(py_script, port)
 
-    return read_logfile(binary, port)
-
-def grade_blocked(binary, s_or_c, port, s_ip, s_port=""):
-    if s_or_c =='s': command = "expect -f sblocked_server.exp "+binary+" "+s_or_c+" "+str(port)+" "+s_ip
-    else: command = "expect -f sblocked_client.exp "+binary+" "+s_or_c+" "+str(port)+" "+s_ip+" "+s_port
+def uunblock(py_script, s_or_c, port, s_ip, s_port, target):
+    command = f"expect -f unblock_client.exp {py_script} {s_or_c} {port} {s_ip} {s_port} {target}"
     process = subprocess.Popen(command, shell=True)
-
-    time.sleep(11)
+    time.sleep(5)
     kill(process.pid)
+    return read_logfile(py_script, port)
 
-    return read_logfile(binary, port)
-
-def ablocked(binary, s_or_c, port, s_ip, s_port, servers):
-    command = "expect -f allblock_client.exp "+binary+" "+s_or_c+" "+str(port)+" "+s_ip+" "+s_port+" "+servers.replace(';', ' ')
+def grade_logout(py_script, s_or_c, port, s_ip, s_port):
+    command = f"expect -f logout_client.exp {py_script} {s_or_c} {port} {s_ip} {s_port}"
     process = subprocess.Popen(command, shell=True)
-
-    time.sleep(10)
-    kill(process.pid)
-
-    return read_logfile(binary, port)
-
-def grade_unblock(binary, s_or_c, port, s_ip, s_port, server_to_send, msg):
-    command = "expect -f unblocked_client.exp "+binary+" "+s_or_c+" "+str(port)+" "+s_ip+" "+s_port+" "+server_to_send+" "+msg
-    process = subprocess.Popen(command, shell=True)
-
-    time.sleep(10)
-    kill(process.pid)
-
-    return read_logfile(binary, port)
-
-def uunblock(binary, s_or_c, port, s_ip, s_port, server_to_block):
-    command = "expect -f unblocking_client.exp "+binary+" "+s_or_c+" "+str(port)+" "+s_ip+" "+s_port+" "+server_to_block
-    process = subprocess.Popen(command, shell=True)
-
-    time.sleep(10)
-    kill(process.pid)
-
-    return read_logfile(binary, port)
-
-def grade_logout(binary, s_or_c, port, s_ip, s_port):
-    command = "expect -f logout_client.exp "+binary+" "+s_or_c+" "+str(port)+" "+s_ip+" "+s_port
-    process = subprocess.Popen(command, shell=True)
-
     time.sleep(4)
     kill(process.pid)
+    return read_logfile(py_script, port)
 
-    return read_logfile(binary, port)
-
-def grade_buffer(binary, s_or_c, port, s_ip, s_port):
-    command = "expect -f buffer_client_r.exp "+binary+" "+s_or_c+" "+str(port)+" "+s_ip+" "+s_port
-    process = subprocess.Popen(command, shell=True, close_fds=True)
-
-    time.sleep(15)
+def grade_buffer(py_script, s_or_c, port, s_ip="", s_port=""):
+    command = f"expect -f buffer_server.exp {py_script} {s_or_c} {port} {s_ip} {s_port}"
+    process = subprocess.Popen(command, shell=True)
+    time.sleep(12)
     kill(process.pid)
+    return read_logfile(py_script, port)
 
-    return read_logfile(binary, port)
-
-def sbuffer(binary, s_or_c, port, s_ip, s_port, send_to_server, msg):
-    command = "expect -f buffer_client_s.exp "+binary+" "+s_or_c+" "+str(port)+" "+s_ip+" "+s_port+" "+send_to_server+" "+msg
-    process = subprocess.Popen(command, shell=True, close_fds=True)
-
-    time.sleep(8)
+def sbuffer(py_script, s_or_c, port, s_ip, s_port, sender_string):
+    sender_info = ast.literal_eval(sender_string)
+    command = f"expect -f buffer_client.exp {py_script} {s_or_c} {port} {s_ip} {s_port} {' '.join(sender_info)}"
+    process = subprocess.Popen(command, shell=True)
+    time.sleep(10)
     kill(process.pid)
+    return read_logfile(py_script, port)
 
-    return read_logfile(binary, port)
-
-def grade_exit(binary, s_or_c, port):
-    command = binary+" "+s_or_c+" "+str(port)
+def grade_exit(py_script, s_or_c, port):
+    command = f"python3 {py_script} {s_or_c} {port}"
     process = subprocess.Popen(command, shell=True, stdout=open(os.devnull, 'w'), stderr=subprocess.STDOUT)
     time.sleep(2)
     status = procStatus(process.pid)
-    if status == 'R' or status == 'S':
-        os.system('kill -9 '+str(process.pid))
-        command = "expect -f exit.exp "+binary+" "+s_or_c+" "+str(port)
+    if status in ['R', 'S']:
+        kill(process.pid)
+        command = f"expect -f exit.exp {py_script} {s_or_c} {port}"
         process = subprocess.Popen(command, shell=True, stdout=open(os.devnull, 'w'), stderr=subprocess.STDOUT)
         time.sleep(2)
         status = procStatus(process.pid)
-        os.system('kill -9 '+str(process.pid))
-        if status == 'Z':
-            return True
-        else: return False
-    else:
-        return False
+        kill(process.pid)
+        return status == 'Z'
+    return False
 
-def grade_statistics(binary, s_or_c, port, s_ip="", s_port="", sender_string=""):
-    if s_or_c == 's': command = "expect -f statistics_server.exp "+binary+" "+s_or_c+" "+str(port)
+def grade_statistics(py_script, s_or_c, port, s_ip="", s_port="", sender_string=""):
+    if s_or_c == 's':
+        command = f"expect -f statistics_server.exp {py_script} {s_or_c} {port}"
     else:
         sender_info = ast.literal_eval(sender_string)
-        command = "expect -f statistics_client_s.exp "+binary+" "+s_or_c+" "+str(port)+" "+s_ip+" "+s_port+" "+' '.join(sender_info)
+        command = f"expect -f statistics_client_s.exp {py_script} {s_or_c} {port} {s_ip} {s_port} {' '.join(sender_info)}"
     process = subprocess.Popen(command, shell=True)
-
     time.sleep(16)
     kill(process.pid)
+    return read_logfile(py_script, port)
 
-    return read_logfile(binary, port)
-
-def grade_exception_login(binary, s_or_c, port):
-    command = "expect -f exception_login.exp "+binary+" "+s_or_c+" "+str(port)
+def grade_exception_login(py_script, s_or_c, port):
+    command = f"expect -f exception_login.exp {py_script} {s_or_c} {port}"
     process = subprocess.Popen(command, shell=True)
-
     time.sleep(5)
     kill(process.pid)
+    return read_logfile(py_script, port)
 
-    return read_logfile(binary, port)
-
-def grade_exception_send(binary, s_or_c, port, s_ip, s_port):
-    command = "expect -f exception_send.exp "+binary+" "+s_or_c+" "+str(port)+" "+s_ip+" "+s_port
+def grade_exception_send(py_script, s_or_c, port, s_ip, s_port):
+    command = f"expect -f exception_send.exp {py_script} {s_or_c} {port} {s_ip} {s_port}"
     process = subprocess.Popen(command, shell=True)
-
     time.sleep(5)
     kill(process.pid)
+    return read_logfile(py_script, port)
 
-    return read_logfile(binary, port)
-
-def grade_exception_block(binary, s_or_c, port, s_ip, s_port, server_to_block=""):
-    if len(server_to_block) == 0: command = "expect -f exception_block_bd.exp "+binary+" "+s_or_c+" "+str(port)+" "+s_ip+" "+s_port
-    else: command = "expect -f exception_block_bg.exp "+binary+" "+s_or_c+" "+str(port)+" "+s_ip+" "+s_port+" "+server_to_block
-    process = subprocess.Popen(command, shell=True)
-
-    time.sleep(5)
-    kill(process.pid)
-
-    return read_logfile(binary, port)
-
-def grade_exception_unblock(binary, s_or_c, port, s_ip, s_port):
-    command = "expect -f exception_unblock.exp "+binary+" "+s_or_c+" "+str(port)+" "+s_ip+" "+s_port
-    process = subprocess.Popen(command, shell=True)
-
-    time.sleep(5)
-    kill(process.pid)
-
-    return read_logfile(binary, port)
-
-def grade_exception_blocked(binary, s_or_c, port):
-    command = "expect -f exception_blocked.exp "+binary+" "+s_or_c+" "+str(port)
-    process = subprocess.Popen(command, shell=True)
-
-    time.sleep(5)
-    kill(process.pid)
-
-    return read_logfile(binary, port)
-
-def grade_bonus(binary, s_or_c, port, s_ip="", s_port=""):
-    if s_or_c == 's': command = "expect -f bonus_server.exp "+binary+" "+s_or_c+" "+str(port)
+def grade_exception_block(py_script, s_or_c, port, s_ip, s_port, server_to_block=""):
+    if not server_to_block:
+        command = f"expect -f exception_block_bd.exp {py_script} {s_or_c} {port} {s_ip} {s_port}"
     else:
-        #Clear files from folder
-        folder = os.path.dirname(binary)
-        txt_file = os.path.join(folder, 'cse4589test.txt')
-        bin_file = os.path.join(folder, 'cse4589test.pdf')
-        os.system('rm -f '+txt_file+' '+bin_file)
-
-        command = "expect -f bonus_client_r.exp "+binary+" "+s_or_c+" "+str(port)+" "+s_ip+" "+s_port
-
+        command = f"expect -f exception_block_bg.exp {py_script} {s_or_c} {port} {s_ip} {s_port} {server_to_block}"
     process = subprocess.Popen(command, shell=True)
+    time.sleep(5)
+    kill(process.pid)
+    return read_logfile(py_script, port)
 
+def grade_exception_unblock(py_script, s_or_c, port, s_ip, s_port, target):
+    command = f"expect -f exception_unblock.exp {py_script} {s_or_c} {port} {s_ip} {s_port} {target}"
+    process = subprocess.Popen(command, shell=True)
+    time.sleep(5)
+    kill(process.pid)
+    return read_logfile(py_script, port)
+
+def grade_exception_blocked(py_script, s_or_c, port, s_ip, s_port):
+    command = f"expect -f exception_blocked.exp {py_script} {s_or_c} {port} {s_ip} {s_port}"
+    process = subprocess.Popen(command, shell=True)
+    time.sleep(5)
+    kill(process.pid)
+    return read_logfile(py_script, port)
+
+def grade_bonus(py_script, s_or_c, port, s_ip="", s_port=""):
+    if s_or_c == 's':
+        command = f"expect -f bonus_server.exp {py_script} {s_or_c} {port}"
+    else:
+        folder = os.path.dirname(py_script)
+        os.system(f'rm -f {folder}/cse4589test.txt {folder}/cse4589test.pdf')
+        command = f"expect -f bonus_client_r.exp {py_script} {s_or_c} {port} {s_ip} {s_port}"
+    process = subprocess.Popen(command, shell=True)
     time.sleep(15)
     kill(process.pid)
+    return read_logfile(py_script, port)
 
-    return read_logfile(binary, port)
-
-def sbonus(binary, s_or_c, port, s_ip, s_port, send_to_server):
-    #Transfer files to folder
-    folder = os.path.dirname(binary)
-    txt_file = 'cse4589test.txt'
-    bin_file = 'cse4589test.pdf'
-    os.system('cp -f '+txt_file+' '+folder)
-    os.system('cp -f '+bin_file+' '+folder)
-
-    command = "expect -f bonus_client_s.exp "+binary+" "+s_or_c+" "+str(port)+" "+s_ip+" "+s_port+" "+send_to_server
+def sbonus(py_script, s_or_c, port, s_ip, s_port, send_to_server):
+    folder = os.path.dirname(py_script)
+    os.system(f'cp -f cse4589test.txt {folder}')
+    os.system(f'cp -f cse4589test.pdf {folder}')
+    command = f"expect -f bonus_client_s.exp {py_script} {s_or_c} {port} {s_ip} {s_port} {send_to_server}"
     process = subprocess.Popen(command, shell=True)
-
     time.sleep(12)
     kill(process.pid)
-
     return 'DONE'
 
-def cbonus(binary, filename):
-    folder = os.path.dirname(binary)
-    recv_file = os.path.join(folder, filename)
-    compare = os.system('cmp '+recv_file+' '+filename)
-
-    if compare == 0: return True
-    else: return False
+def cbonus(py_script, s_or_c, port, s_ip, s_port, server_to_send):
+    command = f"expect -f cbonus.exp {py_script} {s_or_c} {port} {s_ip} {s_port} {server_to_send}"
+    process = subprocess.Popen(command, shell=True)
+    time.sleep(12)
+    kill(process.pid)
+    return 'DONE'
