@@ -49,7 +49,7 @@ def grade_author(py_script, s_or_c, port):
 
 def grade_ip(py_script, s_or_c, port):
     print(f"py_script: {py_script}, s_or_c: {s_or_c}, port: {port}")
-    command = f"expect -f author.exp {py_script} {s_or_c} {port}"
+    command = f"expect -f ip.exp {py_script} {s_or_c} {port}"
     print(f"Executing command: {command}")
     process = subprocess.Popen(command, shell=True)
 
