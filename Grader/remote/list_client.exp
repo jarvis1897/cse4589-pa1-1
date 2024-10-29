@@ -1,6 +1,6 @@
 #!/usr/bin/expect
 
-set binary [lindex $argv 0];
+set py_command [lindex $argv 0];
 set s_or_c [lindex $argv 1];
 set port [lindex $argv 2];
 set server_ip [lindex $argv 3];
@@ -8,7 +8,7 @@ set server_port [lindex $argv 4];
 
 set timeout 1
 
-spawn $binary $s_or_c $port
+spawn python3.7 $py_command $s_or_c $port
 
 expect "*" { send "LOGIN $server_ip $server_port\n" }
 sleep 1
