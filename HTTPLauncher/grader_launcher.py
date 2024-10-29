@@ -101,35 +101,35 @@ class HTTPHandler(BaseHTTPRequestHandler):
         action = message.get('action', [None])[0]
         response = 'OK'
     
-        try:
-            if action == 'get-gdir':
-                # Send only the grading directory path, without any extra formatting or summary.
-                # self.send_response(200)
-                # self.end_headers()
-                # self.wfile.write(gdir.strip().encode('utf-8'))
-                # return  # Exit to prevent any further processing.
-                response = gdir
-    
-            if action == 'build':
-                tarball = message.get('tarball', [None])[0]
-                if not build_submission(tarball):
-                    response = f'FAILED: Unable to build the submission: {tarball}'
-    
-            if action == 'init':
-                try:
-                    remote_grader_path = message.get('remote_grader_path', [None])[0]
-                    python = message.get('python', [None])[0]
-                    port = int(message.get('port', [None])[0])
-                    init_grading_server(remote_grader_path, python, port)
-                except:
-                    response = 'FAILED'
-    
-            if action == 'terminate':
+        # try:
+        if action == 'get-gdir':
+            # Send only the grading directory path, without any extra formatting or summary.
+            # self.send_response(200)
+            # self.end_headers()
+            # self.wfile.write(gdir.strip().encode('utf-8'))
+            # return  # Exit to prevent any further processing.
+            response = gdir
+
+        if action == 'build':
+            tarball = message.get('tarball', [None])[0]
+            if not build_submission(tarball):
+                response = f'FAILED: Unable to build the submission: {tarball}'
+
+        if action == 'init':
+            try:
+                remote_grader_path = message.get('remote_grader_path', [None])[0]
+                python = message.get('python', [None])[0]
                 port = int(message.get('port', [None])[0])
-                os.system(f"kill -9 $(netstat -tpal | grep :{port} | awk '{{print $NF}}' | cut -d/ -f1) > /dev/null 2>&1")
-    
-        except Exception as e:
-            response = f'FAILED: {str(e)}'
+                init_grading_server(remote_grader_path, python, port)
+            except:
+                response = 'FAILED'
+
+        if action == 'terminate':
+            port = int(message.get('port', [None])[0])
+            os.system(f"kill -9 $(netstat -tpal | grep :{port} | awk '{{print $NF}}' | cut -d/ -f1) > /dev/null 2>&1")
+
+        # except Exception as e:
+        #     response = f'FAILED: {str(e)}'
     
         # Send the response and close the connection.
         self.send_response(200)
