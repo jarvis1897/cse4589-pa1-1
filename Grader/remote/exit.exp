@@ -8,6 +8,7 @@ set timeout 1
 
 spawn python3.7 $py_command $s_or_c $port
 
+sleep 1
 expect "*" { send "EXIT\n" }
 
 interact
