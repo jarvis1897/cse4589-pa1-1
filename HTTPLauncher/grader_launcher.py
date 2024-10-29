@@ -137,7 +137,6 @@ class HTTPHandler(BaseHTTPRequestHandler):
         self.send_response(200)
         self.end_headers()
         self.wfile.write(response.encode('utf-8'))
-        self.wfile.close()
 
 
     def do_POST(self):
@@ -153,7 +152,6 @@ class HTTPHandler(BaseHTTPRequestHandler):
         self.send_response(200)
         self.end_headers()
         self.wfile.write((b'OK\n' + summary_message.encode('utf-8')))
-        self.wfile.close()
 
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     pass
