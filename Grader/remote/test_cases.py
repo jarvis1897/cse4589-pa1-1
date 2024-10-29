@@ -190,7 +190,7 @@ def sbuffer(py_script, s_or_c, port, s_ip, s_port, sender_string):
     return read_logfile(py_script, port)
 
 def grade_exit(py_script, s_or_c, port):
-    command = f"python3 {py_script} {s_or_c} {port}"
+    command = f"python3.7 {py_script} {s_or_c} {port}"
     process = subprocess.Popen(command, shell=True, stdout=open(os.devnull, 'w'), stderr=subprocess.STDOUT)
     time.sleep(2)
     status = procStatus(process.pid)
