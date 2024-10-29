@@ -103,32 +103,30 @@ class HTTPHandler(BaseHTTPRequestHandler):
         try:
             if action == 'get-gdir':
                 # Send only the grading directory path, without any extra formatting or summary.
-                self.send_response(200)
-                self.end_headers()
-                self.wfile.write(gdir.strip().encode('utf-8'))
-                return  # Exit to prevent any further processing.
+                # self.send_response(200)
+                # self.end_headers()
+                # self.wfile.write(gdir.strip().encode('utf-8'))
+                # return  # Exit to prevent any further processing.
+                response = gdir
     
-            elif action == 'build':
+            if action == 'build':
                 tarball = message.get('tarball', [None])[0]
                 if not build_submission(tarball):
                     response = f'FAILED: Unable to build the submission: {tarball}'
                 else:
                     response = f'SUCCESS: Build completed for {tarball}'
     
-            elif action == 'init':
+            if action == 'init':
                 remote_grader_path = message.get('remote_grader_path', [None])[0]
                 python = message.get('python', [None])[0]
                 port = int(message.get('port', [None])[0])
                 init_grading_server(remote_grader_path, python, port)
                 response = f'Grading server initialized at {remote_grader_path} on port {port}'
     
-            elif action == 'terminate':
+            if action == 'terminate':
                 port = int(message.get('port', [None])[0])
                 os.system(f"kill -9 $(netstat -tpal | grep :{port} | awk '{{print $NF}}' | cut -d/ -f1) > /dev/null 2>&1")
                 response = f'Terminated grading server on port {port}'
-    
-            else:
-                response = 'Invalid action.'
     
         except Exception as e:
             response = f'FAILED: {str(e)}'
@@ -137,7 +135,8 @@ class HTTPHandler(BaseHTTPRequestHandler):
         self.send_response(200)
         self.end_headers()
         self.wfile.write(response.encode('utf-8'))
-
+        self.wfile.close()
+        return
 
     def do_POST(self):
         parsed = cgi.FieldStorage(fp=self.rfile, headers=self.headers,
