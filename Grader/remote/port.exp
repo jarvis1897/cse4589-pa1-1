@@ -1,14 +1,35 @@
 #!/usr/bin/expect
 
-set binary [lindex $argv 0];
+set py_command [lindex $argv 0];
 set s_or_c [lindex $argv 1];
 set port [lindex $argv 2]
 
 set timeout 1
 
-spawn $binary $s_or_c $port
+# Debugging output to verify arguments
+puts "Running: $py_command $s_or_c $port"
 
+set timeout 5
+
+# Debugging output to verify arguments
+puts "Running: $py_command $s_or_c $port"
+
+set timeout 5
+
+spawn python3.7 $py_command $s_or_c $port
 sleep 1
-expect "*" { send "PORT\n" }
+# Debugging: Print output before sending "PORT"
+expect {
+    "*" { puts "Output: $expect_out(buffer)"; send "PORT\n" }
+}
+
+# Wait for the process to run
+sleep 2
+
+# Debugging: Print PID before killing
+puts "Killing process with PID: [exp_pid]"
+
+# Kill the process
+exec kill -9 [exp_pid]
 
 interact

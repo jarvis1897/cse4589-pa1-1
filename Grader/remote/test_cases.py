@@ -60,14 +60,18 @@ def grade_ip(py_script, s_or_c, port):
     print(f"log: {log}")
     return log
 
-def grade_port(binary, s_or_c, port):
-    command = "expect -f port.exp "+binary+" "+s_or_c+" "+str(port)
+def grade_port(py_script, s_or_c, port):
+    print(f"py_script: {py_script}, s_or_c: {s_or_c}, port: {port}")
+    command = f"expect -f author.exp {py_script} {s_or_c} {port}"
+    print(f"Executing command: {command}")
     process = subprocess.Popen(command, shell=True, stdout=open(os.devnull, 'w'), stderr=subprocess.STDOUT)
 
     time.sleep(2)
     kill(process.pid)
 
-    return read_logfile(binary, port)
+    log = read_logfile(py_script, port)
+    print(f"log: {log}")
+    return log
 
 def grade_list(binary, s_or_c, port, s_ip="", s_port=""):
     if s_or_c == 's': command = "expect -f list_server.exp "+binary+" "+s_or_c+" "+str(port)
