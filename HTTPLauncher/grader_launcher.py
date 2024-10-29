@@ -103,11 +103,6 @@ class HTTPHandler(BaseHTTPRequestHandler):
     
         # try:
         if action == 'get-gdir':
-            # Send only the grading directory path, without any extra formatting or summary.
-            # self.send_response(200)
-            # self.end_headers()
-            # self.wfile.write(gdir.strip().encode('utf-8'))
-            # return  # Exit to prevent any further processing.
             response = gdir
 
         if action == 'build':
@@ -135,7 +130,7 @@ class HTTPHandler(BaseHTTPRequestHandler):
         self.send_response(200)
         self.end_headers()
         self.wfile.write(response.encode('utf-8'))
-        self.wfile.close()
+        # self.wfile.close()
         return
 
     def do_POST(self):
