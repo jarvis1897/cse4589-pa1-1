@@ -80,8 +80,8 @@ def grade_list(py_script, s_or_c, port, s_ip="", s_port=""):
         command = f"expect -f list_client.exp {py_script} {s_or_c} {port} {s_ip} {s_port}"
     process = subprocess.Popen(command, shell=True, close_fds=True)
 
-    if s_or_c == 's': time.sleep(15)
-    else: time.sleep(2)
+    if s_or_c == 's': time.sleep(35)
+    else: time.sleep(8)
 
     return read_logfile(py_script, port)
 
