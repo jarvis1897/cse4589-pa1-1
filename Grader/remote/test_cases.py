@@ -89,7 +89,7 @@ def grade_refresh(py_script, s_or_c, port, s_ip, s_port):
     # command = "expect -f refresh_client.exp "+binary+" "+s_or_c+" "+str(port)+" "+s_ip+" "+s_port
     command = f"expect -f refresh_client.exp {py_script} {s_or_c} {port} {s_ip} {s_port}"
     process = subprocess.Popen(command, shell=True)
-    time.sleep(8)
+    time.sleep(15)
     kill(process.pid)
     return read_logfile(py_script, port)
 
