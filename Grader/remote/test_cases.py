@@ -218,7 +218,7 @@ def grade_statistics(py_script, s_or_c, port, s_ip="", s_port="", sender_string=
 def grade_exception_login(py_script, s_or_c, port):
     command = f"expect -f exception_login.exp {py_script} {s_or_c} {port}"
     process = subprocess.Popen(command, shell=True)
-    time.sleep(5)
+    time.sleep(30)
     kill(process.pid)
     return read_logfile(py_script, port)
 

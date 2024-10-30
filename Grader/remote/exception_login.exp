@@ -15,6 +15,6 @@ sleep 5
 expect "*" { send "LOGIN 128.205 efgh\n" }
 sleep 5
 expect "*" { send "LOGIN 0.0.0.0 68243\n" }
-sleep 15
+sleep 5
 
 interact
