@@ -9,12 +9,12 @@ set timeout 1
 spawn python3.7 $py_command $s_or_c $port
 
 expect "*" { send "LOGIN 128.205.36.46 abcd\n" }
-sleep 1
+sleep 5
 expect "*" { send "LOGIN 128.205.36 1234\n" }
-sleep 1
+sleep 5
 expect "*" { send "LOGIN 128.205 efgh\n" }
-sleep 1
+sleep 5
 expect "*" { send "LOGIN 0.0.0.0 68243\n" }
-sleep 1
+sleep 5
 
 interact
